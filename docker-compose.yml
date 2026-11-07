@@ -1,0 +1,12 @@
+services:
+  school_sync:
+    build: .
+    container_name: school_sync_app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./school_sync.db:/app/school_sync.db
+      - ./data:/app/data

@@ -1,0 +1,19 @@
+.git
+.gitignore
+.venv
+env
+venv
+__pycache__
+*.py[cod]
+.pytest_cache
+.ruff_cache
+backups
+*.zip
+*.tar.gz
+* - копия
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+.temp
+.codeassistant

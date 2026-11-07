@@ -1,0 +1,43 @@
+# Environment variables
+.env
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# Python cache & artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.ruff_cache/
+
+# Databases & local state
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.sqlite3-journal
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Backups & archives
+backups/
+*.zip
+*.tar.gz
+* - копия/
+*.backup
+
+# IDE & editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary directories
+.temp/
+.codeassistant/
