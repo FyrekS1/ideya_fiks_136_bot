@@ -916,6 +916,7 @@ async def generate_final_quiz(event, context: MemoryContext):
     user = await get_user(user_id)
     logging.info(f"Generating quiz: user={user_id}, topic='{topic}', count={count}")
     
+    await context.update_data(is_generating=True)
     try:
         quiz_data = await create_quiz(prompt)
         quiz_id = await save_quiz(topic, quiz_data, teacher_id=user_id)
@@ -933,16 +934,37 @@ async def generate_final_quiz(event, context: MemoryContext):
             attachments=[builder.as_markup()],
             format=Format.HTML
         )
+        await context.clear()
+        await show_main_menu(event, user)
     except Exception as e:
         logging.exception(f"Quiz generation error: {e}")
+        await context.update_data(is_generating=False)
+        builder = InlineKeyboardBuilder()
+        builder.row(CallbackButton(text="🔄 Повторить генерацию", payload="quiz_retry"))
+        builder.row(CallbackButton(text="⌂ В главное меню", payload="menu_back"))
         await event.message.answer(
             "⚠️ <b>Временная ошибка нейросети при формировании квиза.</b>\n\n"
-            "Сервер ИИ был временно недоступен. Пожалуйста, попробуйте отправить запрос еще раз через минуту или выберите другую тему.",
+            "Сервер ИИ был перегружен или не ответил вовремя.\n\n"
+            "Вы можете нажать <b>«🔄 Повторить генерацию»</b>, чтобы попробовать снова с теми же материалами, или вернуться в главное меню.",
+            attachments=[builder.as_markup()],
             format=Format.HTML
         )
-        
-    await context.clear()
-    await show_main_menu(event, user)
+
+@dp.message_callback(F.callback.payload == "quiz_retry")
+async def retry_quiz_generation(event: MessageCallback, context: MemoryContext):
+    await event.answer()
+    data = await context.get_data()
+    if not data or not data.get("topic"):
+        user = await get_user(get_user_id(event))
+        await context.clear()
+        await event.message.answer("Данные предыдущего запроса устарели. Пожалуйста, создайте квиз заново через меню.")
+        return await show_main_menu(event, user)
+
+    if data.get("is_generating"):
+        return await event.message.answer("⏳ Генерация уже выполняется, пожалуйста, подождите...")
+
+    await generate_final_quiz(event, context)
+
 
 # ================= УЧЕНИК: ПРОХОЖДЕНИЕ КВИЗА =================
 @dp.message_callback(F.callback.payload == "menu_solve_quizzes")
