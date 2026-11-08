@@ -3,7 +3,7 @@
 > **Проект для платформы MAX Messenger**  
 > Официальный бот проекта в MAX: [https://max.ru/ideya_fiks_136_bot](https://max.ru/ideya_fiks_136_bot)  
 > Имя бота: `@ideya_fiks_136_bot`  
-> Базовая площадка внедрения: **МБОУ «Лицей № 44» г. Чебоксары** (строго 5-дневная учебная неделя, 34 класса)
+> Базовая площадка внедрения: **МБОУ «Лицей № 44» г. Чебоксары** ([https://lic44.ru](https://lic44.ru), строго 5-дневная учебная неделя, 34 класса)
 
 ---
 
@@ -220,4 +220,4 @@ pytest -v
 
 * **Ссылка на проект в MAX Messenger:** [https://max.ru/ideya_fiks_136_bot](https://max.ru/ideya_fiks_136_bot)
 * **Документация Bot API MAX:** [https://dev.max.ru/docs](https://dev.max.ru/docs)
-* **МБОУ «Лицей № 44» г. Чебоксары:** [https://sch44.citycheb.ru](https://sch44.citycheb.ru)
+* **Официальный сайт МБОУ «Лицей № 44» г. Чебоксары:** [https://lic44.ru](https://lic44.ru)
