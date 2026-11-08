@@ -3,6 +3,7 @@
 > **Проект для платформы MAX Messenger**  
 > Официальный бот проекта в MAX: [https://max.ru/ideya_fiks_136_bot](https://max.ru/ideya_fiks_136_bot)  
 > Имя бота: `@ideya_fiks_136_bot`  
+> Публичный Docker Hub образ: [`fyreks1/school_sync_bot:latest`](https://hub.docker.com/r/fyreks1/school_sync_bot)  
 > Базовая площадка внедрения: **МБОУ «Лицей № 44» г. Чебоксары** ([https://lic44.ru](https://lic44.ru), строго 5-дневная учебная неделя, 34 класса)
 
 ---
@@ -120,22 +121,34 @@ docker compose down
 
 ---
 
-### Способ 2. Сборка и запуск через чистый Docker
+### Способ 2. Запуск через Docker (Docker Hub или локальная сборка)
 
-#### 1. Сборка Docker-образа:
+#### Вариант А: Быстрый запуск готового образа из Docker Hub
 ```bash
-docker build -t school_sync_bot .
-```
+# Скачивание официального образа
+docker pull fyreks1/school_sync_bot:latest
 
-#### 2. Запуск контейнера:
-```bash
+# Запуск контейнера
 docker run -d \
   --name school_sync_app \
   --restart unless-stopped \
-  -p 8000:8000 \
+  -p 8008:8000 \
   --env-file .env \
   -v $(pwd)/school_sync.db:/app/school_sync.db \
-  school_sync_bot
+  fyreks1/school_sync_bot:latest
+```
+
+#### Вариант Б: Локальная сборка из исходников
+```bash
+docker build -t fyreks1/school_sync_bot:latest .
+
+docker run -d \
+  --name school_sync_app \
+  --restart unless-stopped \
+  -p 8008:8000 \
+  --env-file .env \
+  -v $(pwd)/school_sync.db:/app/school_sync.db \
+  fyreks1/school_sync_bot:latest
 ```
 
 #### 3. Управление контейнером:
