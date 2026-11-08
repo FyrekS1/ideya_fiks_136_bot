@@ -58,13 +58,25 @@ def _extract_and_validate(raw_content: str) -> dict:
     return validate_query(payload)
 
 
-async def create_quiz(topic: str) -> dict:
-    """Генерирует квиз с использованием GLM-5.3-Flash и автоматическим фоллбэком на GLM-5.3."""
-    models_to_try = [
-        (MODEL, "GLM-5.3 Flash (основная)"),
-        (FALLBACK_MODEL, "GLM-5.3 (резервная/fallback)")
-    ]
+def get_model_candidates() -> list[tuple[str, str]]:
+    """
+    Возвращает список моделей для запроса с многоуровневым резервированием (fallback).
+    Учитывает независимые провайдерские маршруты на случай 502/503/429 от конкретного шлюза.
+    """
+    candidates = []
+    if MODEL:
+        candidates.append((MODEL, f"Основная ({MODEL})"))
+    if FALLBACK_MODEL and FALLBACK_MODEL != MODEL:
+        candidates.append((FALLBACK_MODEL, f"Резервная ({FALLBACK_MODEL})"))
+    for alt in ["glm-5.3", "qwen-plus", "zai-org/GLM-5.3-Flash", "zai-org/GLM-5.3"]:
+        if alt not in [c[0] for c in candidates]:
+            candidates.append((alt, f"Резервный маршрут ({alt})"))
+    return candidates
 
+
+async def create_quiz(topic: str) -> dict:
+    """Генерирует квиз с использованием цепочки отказоустойчивых моделей с автоматическим фоллбэком."""
+    models_to_try = get_model_candidates()
     client = build_client()
     last_exc = None
 
@@ -73,7 +85,7 @@ async def create_quiz(topic: str) -> dict:
             logger.info(f"Генерация квиза через {label} [модель: {model_name}]...")
             response = await client.chat.completions.create(
                 model=model_name,
-                max_tokens=8192,
+                max_tokens=4096,
                 messages=[
                     {"role": "system", "content": QUIZ_PROMPT},
                     {"role": "user", "content": topic}
@@ -84,10 +96,11 @@ async def create_quiz(topic: str) -> dict:
                 raise ValueError("Модель вернула пустой список choices")
 
             message = response.choices[0].message
-            if not message.content:
+            raw_content = message.content or getattr(message, "reasoning_content", None) or ""
+            if not raw_content.strip():
                 raise ValueError("Пустое тело ответа")
 
-            result = _extract_and_validate(message.content)
+            result = _extract_and_validate(raw_content)
             logger.info(f"Успешная генерация через {label}!")
             return result
 
@@ -119,10 +132,8 @@ def clean_html_for_max(text: str) -> str:
 
 async def generate_student_error_review(topic: str, wrong_answers: list[dict]) -> str:
     """Генерирует персональный разбор ошибок для ученика: четкий, без аналогий и мнемоник, за 2-3 секунды."""
-    models_to_try = [
-        (MODEL, "GLM-5.3 Flash (основная)"),
-        (FALLBACK_MODEL, "GLM-5.3 (резервная)")
-    ]
+    models_to_try = get_model_candidates()
+
 
     wrong_summary = []
     for i, item in enumerate(wrong_answers, 1):
@@ -176,10 +187,8 @@ async def generate_student_error_review(topic: str, wrong_answers: list[dict]) -
 
 async def generate_teacher_lesson_plan(topic: str, weak_topics: list[dict]) -> str:
     """Генерирует 5-минутный экспресс-сценарий урока для учителя на основе слабых мест класса."""
-    models_to_try = [
-        (MODEL, "GLM-5.3 Flash (основная)"),
-        (FALLBACK_MODEL, "GLM-5.3 (резервная/fallback)")
-    ]
+    models_to_try = get_model_candidates()
+
 
     weak_summary = []
     for item in weak_topics[:5]:

@@ -935,7 +935,11 @@ async def generate_final_quiz(event, context: MemoryContext):
         )
     except Exception as e:
         logging.exception(f"Quiz generation error: {e}")
-        await event.message.answer(f"Ошибка генерации: {e}")
+        await event.message.answer(
+            "⚠️ <b>Временная ошибка нейросети при формировании квиза.</b>\n\n"
+            "Сервер ИИ был временно недоступен. Пожалуйста, попробуйте отправить запрос еще раз через минуту или выберите другую тему.",
+            format=Format.HTML
+        )
         
     await context.clear()
     await show_main_menu(event, user)
